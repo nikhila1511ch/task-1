@@ -1,104 +1,110 @@
 pipeline{
     agent any
     environment{
-      REPO_URL= "https://github.com/nikhila1511ch/task-1"
-      WORK_DIR=''
+      REPO_URL= "https://github.com/nikhila1511ch/task-1.git"
+      WORK_DIR='task-1'
       BRANCH_NAME='main'
-      DOCKER_REPO="https://app.docker.com/accounts/nikhila1511/task-1"
-     REPO_DIR=''
+      DOCKER_REPO="nikhila1511/task-1"
+      REPO_NAME='task-1'
       DOCKER_USERNAME='nikhila1511'
       DOCKER_PASSWORD='Nikhila@1511'
       IMAGE_NAME ='httpd'
       IMAGE_TAG='latest'
-      IMAGE=''
-      TARGET_SERVER=
+      TARGET_SERVER='98.80.231.181'
+          }
     stages{
-        stage(check){
-            script{
-                try{
-                if(fileexists($REPO_DIR)){
-                    sh "git ls -la ${REPO_URL}"
-                    echo "file  exists in the $REPO_URL"
-                }else{
-                    echo "file doesn't exists in $REPO_URL "
-                }
-                env.CHECK_STATUS ='SUCESS'
-            }catch(exception e){
-                env.CHECK_STATUS ='FAILED'
-                error("failed to check the $REPO_URL:${e.getmessage}()")
+        stage('check'){
+            steps{
+                script{
+                    try{
+                        if(fileExists(WORK_DIR)){
+                            sh "ls -la ${WORK_DIR}"
+                            echo "file  exists in the $REPO_URL"
+                        } else {
+                            echo "file doesn't exist in $REPO_URL "
+                        }
+                        env.CHECK_STATUS ='SUCCESS'
+                    } catch(Exception e) {
+                        env.CHECK_STATUS ='FAILED'
+                        error("failed to check the $REPO_URL:${e.getMessage()}")
+                    }
+                }    
             }
         }
-            
-    }
-        stage(pull){
-            script{
-                try{
-                if(codeexists(REPO_URL)){
-                    echo "pulled latest version of the code from $REPO_URL to $WORK_DIR"
-                    sh '''
-                    git pull $REPO_URL
-                    '''
-                }else{
-                    echo "cloned code from $REPO_URL and pulling latest version of the code to $WORK_DIR"
-                    sh '''
-                    git clone $REPO_URL
-                    '''
+        stage('pull'){
+            steps{
+                script{
+                     try{
+                        if(fileExists(WORK_DIR)){
+                            echo "pulled latest version of the code from $REPO_URL to $WORK_DIR"
+                            sh "cd $WORK_DIR && git pull origin ${BRANCH_NAME}"
+                        } else {
+                            echo "cloned code from $REPO_URL and pulling latest version of the code to $WORK_DIR"
+                            sh """
+                            git clone -b ${BRANCH_NAME} ${REPO_URL} ${WORK_DIR}
+                            cd ${WORK_DIR} && git pull origin ${BRANCH_NAME}
+                            """
+                        }
+                        env.PULL_STATUS ='SUCCESS'
+                    } catch(Exception e) {
+                        env.PULL_STATUS ='FAILED'
+                        error("failed to pull the latest version from $REPO_URL:${e.getMessage()}")
+                    }
                 }
-                env.PULL_STATUS ='SUCESS'
-            }catch(exception e){
-                env.PULL_STATUS ='FAILED'
-                error("failed to pull the latest version from $REPO_URL:${e.getmessage}()")
             }
         }
-    }
         
-        stage(build){
-            script{
-                try{
-                echo "builed docker image with $IMAGE_NAME and $IMAGE_TAG"{
-                    sh '''
-                    docker build -t${DOCKER_REPO}${IMAGE_NAME}:${IMAGE_TAG},returnstdout :true
-                    '''
-                }
-                env.BUILD_STATUS ='SUCESS'
-            }catch(exception e){
-                env.BUILD_STATUS ='FAILED'
-                error("failed to create docker image with $IMAGE_NAME and $IMAGE_TAG:${e.getmessage}()")
-            }
-        }
-    }
+        stage('build'){
+            steps{
+                script{
+                    try{
+                        echo "build docker image with $IMAGE_NAME and $IMAGE_TAG"
+                        sh "docker build -t ${DOCKER_REPO}:${IMAGE_TAG} . "
 
-        stage(pushimagetorepository){
-            script{
-                try{
-                echo " docker image was run with $IMAGE_NAME and $IMAGE_TAG"{
-                    sh '''
-                    docker   
-                    '''
+                        env.BUILD_STATUS ='SUCCESS'
+                    } catch(Exception e) {
+                        env.BUILD_STATUS ='FAILED'
+                        error("failed to create docker image with $IMAGE_NAME and $IMAGE_TAG:${e.getMessage()}")
+                    }
                 }
-                env.PUSH_STATUS ='SUCESS'
-            }catch(exception e){
-                env.PUSH_STATUS ='FAILED'
-                error("failed to push  docker image to $DOCKER_REPO:${e.getmessage}()")
             }
         }
-    }
 
-        stage(deploy){
-            script{
-                try{
-                echo " application deployed sucessfully in $TARGET_SERVER "{
-                    sh '''
-                    docker login -u $DOCKER-USERNAME -p $DOCKER_PASSWORD
-                    docker push ${DOCKER_REPO}${IMAGE_NAME}:${IMAGE_TAG}
-                    '''
+        stage('pushimagetorepository'){
+            steps{
+                script{
+                    try{
+                        echo " docker image was run with $IMAGE_NAME and $IMAGE_TAG"
+                        sh """
+                        docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+                        docker tag ${DOCKER_REPO}:${IMAGE_TAG} ${DOCKER_USERNAME}/${REPO_NAME}:${IMAGE_TAG}
+                        docker push ${DOCKER_USERNAME}/${REPO_NAME}:${IMAGE_TAG}
+                        """
+                        env.PUSH_STATUS ='SUCCESS'
+                } catch(Exception e) {
+                        env.PUSH_STATUS ='FAILED'
+                        error("failed to push  docker image to $DOCKER_REPO:${e.getMessage()}")
+                    }
                 }
-                env.DEPLOY_STATUS ='SUCESS'
-            }catch(exception e){
-                env.DEPLOY_STATUS ='FAILED'
-                error("failed to deploy in $TARGET_SERVER:${e.getmessage}()")
             }
         }
-    }
+
+        stage('pullfromdockerrepo'){
+            steps{
+                script{
+                    try{
+                        echo " pulling from ${DOCKER_REPO} "
+                        sh """
+                        docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+                        docker pull ${DOCKER_REPO}:${IMAGE_TAG}
+                        """
+                        env.PULL_FROM_DOCKER_REPO_STATUS ='SUCCESS'
+                    }catch(Exception e){
+                        env.PULL_FROM_DOCKER_REPO_STATUS ='FAILED'
+                        error("failed to pull from $DOCKER_USERNAME:${e.getMessage()}")
+                    }
+                }
+            }
+        }
     }
 }
