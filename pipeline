@@ -1,0 +1,26 @@
+pipeline{
+    agent any
+    environment{
+      REPO_URL=  
+    }
+    stages{
+        stage(check){
+            try{
+                if(fileexists(REPO_URL)){
+                    echo "file  exists in the $REPO_URL"
+                }else{
+                    echo "file doesn't exists in $REPO_URL "
+                }
+                env.CHECK_STATUS ='SUCESS'
+            }catch(exception e){
+                env.CHECK_STATUS ='FAILED'
+                error("failed to check the $REPO_URL:${e.getmessage}()")
+            }
+            }
+        }
+        
+        stage(pull{
+
+        }
+    }
+}
