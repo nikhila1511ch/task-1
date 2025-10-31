@@ -1,11 +1,9 @@
-FROM node:latest
+FROM httpd:latest
 
-COPY 
+WORKDIR /app
 
-COPY 
+COPY . /usr/local/apache2/htdocs/
 
-WORKDIR 
+EXPOSE 80
 
-RUN npm install
-
-CMD ["node",""]
+CMD ["httpd-foreground"]
