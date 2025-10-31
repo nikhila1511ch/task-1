@@ -68,22 +68,6 @@ pipeline{
         }
     }
 
-        stage(run){
-            script{
-                try{
-                echo " docker image was run with $IMAGE_NAME and $IMAGE_TAG"{
-                    sh '''
-                    docker run -it -d -p 8080:80 $IMAGE 
-                    '''
-                }
-                env.RUN_STATUS ='SUCESS'
-            }catch(exception e){
-                env.RUN_STATUS ='FAILED'
-                error("failed to run docker image with $IMAGE:${e.getmessage}()")
-            }
-        }         
-    }
-
         stage(pushimagetorepository){
             script{
                 try{
@@ -113,19 +97,6 @@ pipeline{
             }catch(exception e){
                 env.DEPLOY_STATUS ='FAILED'
                 error("failed to deploy in $TARGET_SERVER:${e.getmessage}()")
-            }
-        }
-    }
-    post{
-        always{
-            script{
-                def checkstatus =env.CHECK_STATUS?: not executed
-                def pullstatus =env.PULL_STATUS?: not executed
-                def buildstatus =env.BUILD_STATUS?: not executed
-                def runstatus =env.RUN_STATUS?: not executed
-                def pushstatus =env.PUSH_STATUS?: not executed
-                def deploystatus =env.DEPLOY_STATUS?: not executed
-
             }
         }
     }
