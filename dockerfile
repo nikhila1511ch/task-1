@@ -1,9 +1,7 @@
-FROM httpd:latest
+FROM node:latest
 
 WORKDIR /app
 
-COPY . /usr/local/apache2/htdocs/
+COPY ..
 
-EXPOSE 80
-
-CMD ["httpd-foreground"]
+CMD ["node","npm"]
