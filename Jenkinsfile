@@ -59,7 +59,9 @@ pipeline{
                 script{
                     try{
                         echo "build docker image : ${IMAGE_NAME} and ${IMAGE_TAG}"
+                        dir(REPO_DIR) {
                         sh "docker build -t ${DOCKER_REPO}${IMAGE_NAME}:${IMAGE_TAG} ."
+                        }
 
                         env.BUILD_STATUS ='SUCCESS'
                     } catch(Exception e) {
