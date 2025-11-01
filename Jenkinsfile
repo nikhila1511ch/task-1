@@ -8,7 +8,7 @@ pipeline{
       REPO_NAME='task-1'
       DOCKER_USERNAME='nikhila1511'
       DOCKER_PASSWORD='Nikhila@1511'
-      IMAGE_NAME ='node'
+      IMAGE_NAME ='nginx'
       IMAGE_TAG='latest'
       TARGET_SERVER='98.80.231.181'
           }
