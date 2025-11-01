@@ -1,7 +1,9 @@
-FROM node:latest
+FROM nginx:1.29.3-alpine
+
+COPY . .
 
 WORKDIR /app
 
-COPY ..
+RUN node install
 
-CMD ["node","npm"]
+CMD [ "node","npm" ]
