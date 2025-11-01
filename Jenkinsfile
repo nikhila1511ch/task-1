@@ -122,5 +122,23 @@ pipeline{
                 }
             }
         }
+
+        stage('deploy'){
+            steps{
+                script{
+                    try{
+                        echo "running image comtainer"
+                        sh"""
+                        docker pull ${DOCKER_REPO}:${IMAGE_TAG}
+                        docker run -it ${DOCKER_REPO}:${IMAGE_TAG} /bin/bash
+                        """
+                         env.DEPLOY_STATUS ='SUCCESS'
+                    }catch(Exception e){
+                        env.DEPLOY_STATUS ='FAILED'
+                        error("failed to deploy ${DOCKER_REPO}:${IMAGE_TAG}:${e.getMessage()}")
+                    }
+                }
+            }
+        }
     }
 }
