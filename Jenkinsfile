@@ -131,7 +131,7 @@ pipeline{
                         sh"""
                         docker rm -f task1app || true
                         docker pull ${DOCKER_USERNAME}/${REPO_NAME}:${IMAGE_TAG}
-                        docker run -d -p 8080:80 --name task1app ${DOCKER_USERNAME}/${REPO_NAME}:${IMAGE_TAG}
+                        docker run -d -p 9000:80 --name task1app ${DOCKER_USERNAME}/${REPO_NAME}:${IMAGE_TAG}
                         """
                          env.DEPLOY_STATUS ='SUCCESS'
                     }catch(Exception e){
