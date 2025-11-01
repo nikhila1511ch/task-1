@@ -5,6 +5,7 @@ pipeline{
       WORK_DIR='task-1'
       BRANCH_NAME='main'
       DOCKER_REPO="nikhila1511/task-1"
+      REPO_DIR='task-1'
       REPO_NAME='task-1'
       DOCKER_USERNAME='nikhila1511'
       DOCKER_PASSWORD='Nikhila@1511'
@@ -36,19 +37,31 @@ pipeline{
                 script{
                      try{
                         if(fileExists(WORK_DIR)){
-                            echo "pulled latest version of the code from $REPO_URL to $WORK_DIR"
-                            sh "cd $WORK_DIR && git pull origin ${BRANCH_NAME}"
+                            echo "pulled latest version of the code from ${REPO_URL} to ${WORK_DIR}"
+                            sh "cd ${WORK_DIR} && git pull origin ${BRANCH_NAME}"
+                            dir(REPO_DIR) {
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: BRANCH_NAME]],
+                            userRemoteConfigs: [[url: REPO_URL]]
+                        ])
+                    }
+                            
                         } else {
-                            echo "cloned code from $REPO_URL and pulling latest version of the code to $WORK_DIR"
+                            echo "cloned code from ${REPO_URL} and pulling latest version of the code to ${WORK_DIR}"
                             sh """
                             git clone -b ${BRANCH_NAME} ${REPO_URL} ${WORK_DIR}
                             cd ${WORK_DIR} && git pull origin ${BRANCH_NAME}
                             """
+                            dir(REPO_DIR) {
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: BRANCH_NAME]],
+                            userRemoteConfigs: [[url: REPO_URL]]
+                        ])}
                         }
                         env.PULL_STATUS ='SUCCESS'
                     } catch(Exception e) {
                         env.PULL_STATUS ='FAILED'
-                        error("failed to pull the latest version from $REPO_URL:${e.getMessage()}")
+                        error("failed to pull the latest version from ${REPO_URL}:${e.getMessage()}")
                     }
                 }
             }
@@ -60,7 +73,8 @@ pipeline{
                     try{
                         echo "build docker image : ${IMAGE_NAME} and ${IMAGE_TAG}"
                         dir(REPO_DIR) {
-                        sh "docker build -t ${DOCKER_REPO}${IMAGE_NAME}:${IMAGE_TAG} ."
+                            sh "docker build -t ${DOCKER_REPO}:${IMAGE_TAG} ."
+                            
                         }
 
                         env.BUILD_STATUS ='SUCCESS'
