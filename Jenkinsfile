@@ -8,7 +8,7 @@ pipeline{
       REPO_NAME='task-1'
       DOCKER_USERNAME='nikhila1511'
       DOCKER_PASSWORD='Nikhila@1511'
-      IMAGE_NAME ='httpd'
+      IMAGE_NAME ='node'
       IMAGE_TAG='latest'
       TARGET_SERVER='98.80.231.181'
           }
@@ -59,7 +59,7 @@ pipeline{
                 script{
                     try{
                         echo "build docker image with $IMAGE_NAME and $IMAGE_TAG"
-                        sh "docker build -t ${DOCKER_REPO}:${IMAGE_TAG} . "
+                        sh "docker build -t ${DOCKER_REPO}:${IMAGE_TAG} ."
 
                         env.BUILD_STATUS ='SUCCESS'
                     } catch(Exception e) {
