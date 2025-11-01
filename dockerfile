@@ -1,9 +1,7 @@
 FROM nginx:latest
 
-COPY . .
+COPY --from=build /app/dist /usr/share/nginx/html
 
-WORKDIR /app
+EXPOSE 80
 
-RUN node install
-
-CMD [ "node","npm" ]
+CMD ["nginx", "-g", "daemon off;"]
