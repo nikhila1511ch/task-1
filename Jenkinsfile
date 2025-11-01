@@ -129,8 +129,9 @@ pipeline{
                     try{
                         echo "running image comtainer"
                         sh"""
+                        docker rm -f task1app || true
                         docker pull ${DOCKER_REPO}:${IMAGE_TAG}
-                        docker run -it ${DOCKER_REPO}:${IMAGE_TAG} /bin/bash
+                        docker run -d -p 8080:80 --name task1app ${DOCKER_USERNAME}/${REPO_NAME}:${IMAGE_TAG}
                         """
                          env.DEPLOY_STATUS ='SUCCESS'
                     }catch(Exception e){
