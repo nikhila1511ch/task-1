@@ -58,8 +58,8 @@ pipeline{
             steps{
                 script{
                     try{
-                        echo "build docker image with $IMAGE_NAME and $IMAGE_TAG"
-                        sh "docker build -t ${DOCKER_REPO}:${IMAGE_TAG} ."
+                        echo "build docker image : ${IMAGE_NAME} and ${IMAGE_TAG}"
+                        sh "docker build -t ${DOCKER_REPO}${IMAGE_NAME}:${IMAGE_TAG} ."
 
                         env.BUILD_STATUS ='SUCCESS'
                     } catch(Exception e) {
@@ -69,7 +69,7 @@ pipeline{
                 }
             }
         }
-
+         
         stage('pushimagetorepository'){
             steps{
                 script{
